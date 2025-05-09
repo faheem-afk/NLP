@@ -1,4 +1,4 @@
-# 📚 Named Entity Recognition & Long Form Expansion using BERT + BiRNNs
+# 📚 Named Entity Recognition 
 
 This project focuses on identifying named entities and expanding acronyms using the PLOD-CW-25 dataset. It combines pre-trained BERT embeddings with POS tag embeddings, and utilizes a suite of Bi-directional recurrent models (BiLSTM, BiGRU, BiRNN) to predict entity tags and long forms. A Flask web app was developed and deployed to Google Cloud for interactive use.
 
