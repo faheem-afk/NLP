@@ -3,7 +3,7 @@ from flask_cors import CORS
 from Prediction import Prediction
 import json
 from datetime import datetime
-import os
+from google.cloud import storage
 
 app = Flask(__name__)
 CORS(app) 
@@ -16,10 +16,13 @@ def log_interaction(user_input, model_name, prediction):
         "prediction": prediction
     }
 
-    os.makedirs('logs', exist_ok=True)
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket('logs_nlp')
 
-    with open("logs/logs.jsonl", "a") as f:
-        f.write(json.dumps(log_entry) + "\n")
+    blob = bucket.blob('logs/log_file.jsonl')
+
+    with blob.open('wt') as log_file:
+        log_file.write(json.dumps(log_entry) + "\n")
 
 @app.route('/')
 def home():
