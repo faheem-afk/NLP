@@ -7,6 +7,10 @@ WORKDIR /app
 
 COPY . /app
 
+COPY nlp_key.json /app/nlp_key.json
+
+ENV GOOGLE_APPLICATION_CREDENTIALS=/app/nlp_key.json
+
 RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
