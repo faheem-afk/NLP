@@ -65,7 +65,7 @@ The primary goal is to train a model capable of extracting and classifying these
 - The application was containerized using Docker.
 - Deployed on **Google Cloud Run**.
 - **Live Demo:** [Flask NER App](https://my-flask-app-1092211905562.us-central1.run.app)
-- To access the logs: [logs](https://github.com/user-attachments/assets/9acce358-c3a1-44f1-8e16-833a2608e37b)
+- To access the logs: [logs](https://storage.cloud.google.com/logs_nlp/logs/log_file.jsonl)
 
 
 ## 🧪 Usage
