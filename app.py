@@ -1,28 +1,18 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from Prediction import Prediction
-import json
-from datetime import datetime
-from google.cloud import storage
+from transformers import BertForTokenClassification
+from utils import inverse_labelled, labelled, load_data, log_interaction
+import torch
 
 app = Flask(__name__)
 CORS(app) 
 
-def log_interaction(user_input, model_name, prediction):
-    log_entry = {
-        "timestamp": datetime.utcnow().isoformat(),
-        "input": user_input,
-        "model": model_name,
-        "prediction": prediction
-    }
+df_train, _, _ = load_data("data/preprocessed_data")
 
-    storage_client = storage.Client()
-    bucket = storage_client.get_bucket('logs_nlp')
+model_bert = BertForTokenClassification.from_pretrained('bert-base-cased', num_labels=4, id2label=inverse_labelled(df_train), label2id=labelled(df_train))
 
-    blob = bucket.blob('logs/log_file.jsonl')
-
-    with blob.open('wt') as log_file:
-        log_file.write(json.dumps(log_entry) + "\n")
+model_bert.load_state_dict(torch.load("artifacts/model_bert.pt", map_location=torch.device("cpu")))
 
 @app.route('/')
 def home():
@@ -38,13 +28,13 @@ def predict():
     pred = Prediction(model, user_input_1, user_input_2)
 
     if model == 'rnn':
-        message = pred.prediction()
+        message = pred.prediction(model_bert)
         log_interaction((user_input_1, user_input_2), model, message)
     elif model == 'lstm':
-       message = pred.prediction()
+       message = pred.prediction(model_bert)
        log_interaction((user_input_1, user_input_2), model, message)
     elif model == 'gru':
-        message = pred.prediction() 
+        message = pred.prediction(model_bert) 
         log_interaction((user_input_1, user_input_2), model, message)
     else:
         message = "Invalid model selected."
