@@ -1,4 +1,4 @@
-from utils import inverse_labelled, labelled
+from utils import inverse_labelled, labelled, load_data
 from datasets import Dataset
 from transformers import BertForTokenClassification, TrainingArguments, Trainer
 import torch.nn as nn
@@ -9,8 +9,8 @@ import os
 
 class BertModelTraining():
     
-    def __init__(self, DataPreprocessingObject, TokenizationObject):
-        self.df_train, self.df_test = DataPreprocessingObject.pre_processing()
+    def __init__(self, TokenizationObject):
+        self.df_train, self.df_test, self.df_validation = load_data("data/preprocessed_data")
         self.tokenizer = TokenizationObject
         self.device = settings.deviceOption()
    
@@ -18,19 +18,20 @@ class BertModelTraining():
 
         dataset_train = Dataset.from_pandas(self.df_train)
         dataset_test = Dataset.from_pandas(self.df_test)
+        dataset_validation = Dataset.from_pandas(self.df_validation)
+     
         self.tokenized_dataset_train = dataset_train.map(self.tokenizer.tokenize,  batched=True)
         self.tokenized_dataset_test = dataset_test.map(self.tokenizer.tokenize, batched=True)
+        self.tokenized_dataset_validation = dataset_validation.map(self.tokenizer.tokenize, batched=True)
         
 
         # bert_model_initialization
         model_bert = BertForTokenClassification.from_pretrained('bert-base-cased', num_labels=4, id2label=inverse_labelled(self.df_train), label2id=labelled(self.df_train)).to(self.device)
 
         training_args = TrainingArguments(
-            output_dir="./results",
             per_device_train_batch_size=8,
             num_train_epochs=3,
-            logging_dir="./logs",
-            
+    
         )
 
         trainer = Trainer(
