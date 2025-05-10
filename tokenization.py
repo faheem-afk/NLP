@@ -1,10 +1,10 @@
-from utils import labelled
+from utils import labelled, load_data
 from transformers import BertTokenizerFast
 
 class Tokenization():
     
-    def __init__(self, DataPreprocessingObject):
-        self.df_train, self.df_test = DataPreprocessingObject.pre_processing()
+    def __init__(self):
+        self.df_train, _, _ = load_data("data")
         
 
     def tokenize(self, batch):
@@ -44,6 +44,7 @@ class Tokenization():
 
         tokenized_inputs["labels"] = all_labels
         tokenized_inputs['pos'] = pos
+        
         return tokenized_inputs
 
 
