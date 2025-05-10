@@ -7,24 +7,28 @@ from datasetMod import Datasett
 from torch.utils.data import DataLoader
 from training_prediction import TrainingPrediction
 import torch
-from utils import load_data
 
 
 dataIngestionObject = DataIngestion()
 
 dataPreprocessingObject = DataPreprocessing()
 
-tokenizationObject = Tokenization(dataPreprocessingObject)
+dataPreprocessingObject.pre_processing()
 
-bertModelObject = BertModelTraining(dataPreprocessingObject, tokenizationObject)
+tokenizationObject = Tokenization()
+
+bertModelObject = BertModelTraining(tokenizationObject)
 
 generateEmbeddingsObject = GenerateEmbeddings(bertModelObject)
 
-final_embeddings_train, final_embeddings_test = generateEmbeddingsObject.get_embeddings()
+final_embeddings_train, final_embeddings_test, final_embeddings_validation = generateEmbeddingsObject.get_embeddings()
 
-datasetObject = Datasett(final_embeddings_train, torch.tensor(bertModelObject.tokenized_dataset_train['pos']), torch.tensor(bertModelObject.tokenized_dataset_train['labels']))
+train_datasetObject = Datasett(final_embeddings_train, torch.tensor(bertModelObject.tokenized_dataset_train['pos']), torch.tensor(bertModelObject.tokenized_dataset_train['labels']))
+train_loaderObject = DataLoader(train_datasetObject, batch_size=32, shuffle=True, pin_memory=True)
 
-loaderObject = DataLoader(datasetObject, batch_size=32, shuffle=True, pin_memory=True)
+validation_datasetObject = Datasett(final_embeddings_validation, torch.tensor(bertModelObject.tokenized_dataset_validation['pos']), torch.tensor(bertModelObject.tokenized_dataset_validation['labels']))
+validation_loaderObject = DataLoader(validation_datasetObject, batch_size=32, shuffle=False, pin_memory=True)
+
 
 models = {
     "model_lstm":Model_LSTM(),
@@ -35,7 +39,7 @@ models = {
 for model in models:
    
     modelObject = models[model]
-    trainingPredictionObject = TrainingPrediction(loaderObject, modelObject, bertModelObject, final_embeddings_test, dataPreprocessingObject, model)
+    trainingPredictionObject = TrainingPrediction(train_loaderObject, validation_loaderObject, modelObject, bertModelObject, final_embeddings_test, final_embeddings_validation, model)
    
     trainingPredictionObject.Training_and_prediction()
 
