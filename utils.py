@@ -1,7 +1,9 @@
 import re
-import pickle
-import os
 import pandas as pd
+import json
+from datetime import datetime
+from google.cloud import storage
+import os
 
 def labelled(df):
     # label-to-numeric key value pairs
@@ -84,8 +86,36 @@ def cleansed(vocab):
     return sent_inputs, sent_labels, sent_pos
 
 
-def load_data():
-    df_train = pd.read_parquet('data/train.parquet', engine='pyarrow')
-    df_test = pd.read_parquet('data/test.parquet', engine='pyarrow')
+def load_data(path):
+    df_train = pd.read_parquet(f'{path}/train.parquet', engine='pyarrow')
+    df_test = pd.read_parquet(f'{path}/test.parquet', engine='pyarrow')
+    df_validation = pd.read_parquet(f'{path}/validation.parquet', engine='pyarrow')
     
-    return df_train, df_test
+    return df_train, df_test, df_validation
+
+
+def log_interaction(user_input, model_name, prediction):
+    log_entry = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "input": user_input,
+        "model": model_name,
+        "prediction": prediction
+    }
+
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket('logs_nlp')
+
+    blob = bucket.blob('logs/log_file.jsonl')
+
+    with blob.open('wt') as log_file:
+        log_file.write(json.dumps(log_entry) + "\n")
+
+def logger(res, model_name):
+    log_entry = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "results" : res,
+        "model":model_name
+    }
+    os.makedirs("Logs", exist_ok=True)
+    with open("Logs/logs_file.jsonl", "a") as file:
+        file.write(json.dumps(log_entry) + "\n")
