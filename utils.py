@@ -102,7 +102,7 @@ def log_interaction(user_input, model_name, prediction):
         "prediction": prediction
     }
 
-    storage_client = storage.Client()
+    storage_client = storage.Client.from_service_account_json('nlpcoursework.json')
     bucket = storage_client.get_bucket('logs_nlp')
 
     blob = bucket.blob('logs/log_file.jsonl')

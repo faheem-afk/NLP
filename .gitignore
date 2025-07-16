@@ -1,8 +1,12 @@
 # Byte-compiled / optimized / DLL files
-__pycache__/
+__pycache__
 *.py[cod]
 *$py.class
-
+data
+Logs
+artifacts
+trainer_output
+templates
 # C extensions
 *.so
 
