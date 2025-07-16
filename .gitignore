@@ -9,7 +9,7 @@ trainer_output
 templates
 # C extensions
 *.so
-
+nlpcoursework.json
 # Distribution / packaging
 .Python
 build/
