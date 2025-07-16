@@ -1,23 +1,21 @@
 import settings
 from utils import labelled_pos, inverse_labelled, load_data
-from transformers import BertTokenizerFast
 import torch
 from modelling import Model_LSTM, Model_RNN, Model_GRU
 
 
 class Prediction():
-    def __init__(self, model, input_, pos):
+    def __init__(self, model, input_, pos, df_train):
         self.device = settings.deviceOption()
         self.input = input_
         self.pos = pos
         self.model = model
-        self.df_train, _ , _ = load_data("data")
+        # self.df_train, _ , _ = load_data("data")
+        self.df_train = df_train
         self.labelled_pos = labelled_pos(self.df_train)
+        
 
-
-    def prediction(self, model_bert):
-
-        tokenizer_bert = BertTokenizerFast.from_pretrained("bert-base-cased")
+    def prediction(self, model_bert, tokenizer_bert):
         token_ids = tokenizer_bert([self.input], 
                         is_split_into_words=True, 
                         truncation=True, 
