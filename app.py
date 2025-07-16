@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from Prediction import Prediction
 from transformers import BertForTokenClassification
-from utils import inverse_labelled, labelled, load_data, log_interaction
+from utils import inverse_labelled, labelled, log_interaction, download_weights
 import torch
 from transformers import BertTokenizerFast
 import pandas as pd
@@ -16,7 +16,12 @@ df_train_pre = pd.read_parquet("data/preprocessed_data/train.parquet", engine='p
 model_bert = BertForTokenClassification.from_pretrained('bert-base-cased', num_labels=4, id2label=inverse_labelled(df_train_pre), label2id=labelled(df_train_pre))
 tokenizer_bert = BertTokenizerFast.from_pretrained("bert-base-cased")
 
-model_bert.load_state_dict(torch.load("artifacts/model_bert.pt", map_location=torch.device("cpu")))
+download_weights('model_weights_nlpcoursework', 'model_bert.pt', 'model_bert.pt')
+download_weights('model_weights_nlpcoursework', 'model_rnn.pt', 'model_rnn.pt')
+download_weights('model_weights_nlpcoursework', 'model_lstm.pt', 'model_lstm.pt')
+download_weights('model_weights_nlpcoursework', 'model_gru.pt', 'model_gru.pt')
+
+model_bert.load_state_dict(torch.load("model_bert.pt", map_location=torch.device("cpu")))
 
 @app.route('/')
 def home():

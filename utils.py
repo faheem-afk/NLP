@@ -119,3 +119,11 @@ def logger(res, model_name):
     os.makedirs("Logs", exist_ok=True)
     with open("Logs/logs_file.jsonl", "a") as file:
         file.write(json.dumps(log_entry) + "\n")
+
+
+def download_weights(bucket_name, source_blob_name, destination_file_name):
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(source_blob_name)
+    blob.download_to_filename(destination_file_name)
+    

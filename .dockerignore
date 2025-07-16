@@ -1,9 +1,10 @@
 __pycache__/
 Logs/
 trainer_output/
+artifacts/
+
 .gitignore
 
-data/train_parquet.py
 data/test_parquet.py
 data/validation_parquet.py
 

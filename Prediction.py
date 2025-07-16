@@ -1,5 +1,5 @@
 import settings
-from utils import labelled_pos, inverse_labelled, load_data
+from utils import labelled_pos, inverse_labelled
 import torch
 from modelling import Model_LSTM, Model_RNN, Model_GRU
 
@@ -10,7 +10,6 @@ class Prediction():
         self.input = input_
         self.pos = pos
         self.model = model
-        # self.df_train, _ , _ = load_data("data")
         self.df_train = df_train
         self.labelled_pos = labelled_pos(self.df_train)
         
@@ -53,16 +52,17 @@ class Prediction():
             
             if self.model == 'rnn':
                 modelObject = Model_RNN()
-                modelObject.load_state_dict(torch.load("artifacts/model_rnn.pt", map_location=torch.device("cpu")))
+                modelObject.load_state_dict(torch.load("model_rnn.pt", map_location=torch.device("cpu")))
             elif self.model == 'lstm':
                 modelObject = Model_LSTM()
-                modelObject.load_state_dict(torch.load("artifacts/model_lstm.pt", map_location=torch.device("cpu")))
+                modelObject.load_state_dict(torch.load("model_lstm.pt", map_location=torch.device("cpu")))
             else:
                 modelObject = Model_GRU()
-                modelObject.load_state_dict(torch.load("artifacts/model_gru.pt", map_location=torch.device("cpu")))
+                modelObject.load_state_dict(torch.load("model_gru.pt", map_location=torch.device("cpu")))
 
             output = modelObject(embeddings,padded_pos_torch).view(-1, 4)
             probs = torch.nn.functional.softmax(output, dim=1)
+            
             value, index = torch.max(probs, dim=1)
 
         return inverse_labelled(self.df_train)[index[1].item()]
