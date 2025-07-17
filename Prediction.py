@@ -1,16 +1,16 @@
 import settings
-from utils import labelled_pos, inverse_labelled
+from utils import labelled_pos, inverse_labelled, load_data
 import torch
 from modelling import Model_LSTM, Model_RNN, Model_GRU
 
 
 class Prediction():
-    def __init__(self, model, input_, pos, df_train):
+    def __init__(self, model, input_, pos):
         self.device = settings.deviceOption()
         self.input = input_
         self.pos = pos
         self.model = model
-        self.df_train = df_train
+        self.df_train, _, _ = load_data('data')
         self.labelled_pos = labelled_pos(self.df_train)
         
 
@@ -52,13 +52,13 @@ class Prediction():
             
             if self.model == 'rnn':
                 modelObject = Model_RNN()
-                modelObject.load_state_dict(torch.load("model_rnn.pt", map_location=torch.device("cpu")))
+                modelObject.load_state_dict(torch.load("artifacts/model_rnn.pt", map_location=torch.device("cpu")))
             elif self.model == 'lstm':
                 modelObject = Model_LSTM()
-                modelObject.load_state_dict(torch.load("model_lstm.pt", map_location=torch.device("cpu")))
+                modelObject.load_state_dict(torch.load("artifacts/model_lstm.pt", map_location=torch.device("cpu")))
             else:
                 modelObject = Model_GRU()
-                modelObject.load_state_dict(torch.load("model_gru.pt", map_location=torch.device("cpu")))
+                modelObject.load_state_dict(torch.load("artifacts/model_gru.pt", map_location=torch.device("cpu")))
 
             output = modelObject(embeddings,padded_pos_torch).view(-1, 4)
             probs = torch.nn.functional.softmax(output, dim=1)

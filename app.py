@@ -2,26 +2,23 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from Prediction import Prediction
 from transformers import BertForTokenClassification
-from utils import inverse_labelled, labelled, log_interaction, download_weights
+from utils import inverse_labelled, labelled, log_interaction, load_data
 import torch
 from transformers import BertTokenizerFast
-import pandas as pd
+
 
 app = Flask(__name__)
 CORS(app) 
 
-df_train = pd.read_parquet("data/train.parquet", engine='pyarrow')
-df_train_pre = pd.read_parquet("data/preprocessed_data/train.parquet", engine='pyarrow')
+df_train_pre, _, _ = load_data("data/preprocessed_data")
 
-model_bert = BertForTokenClassification.from_pretrained('bert-base-cased', num_labels=4, id2label=inverse_labelled(df_train_pre), label2id=labelled(df_train_pre))
+# Load tokenizer (this still uses internet, unless you cache it or upload it too)
 tokenizer_bert = BertTokenizerFast.from_pretrained("bert-base-cased")
 
-download_weights('model_weights_nlpcoursework', 'model_bert.pt', 'model_bert.pt')
-download_weights('model_weights_nlpcoursework', 'model_rnn.pt', 'model_rnn.pt')
-download_weights('model_weights_nlpcoursework', 'model_lstm.pt', 'model_lstm.pt')
-download_weights('model_weights_nlpcoursework', 'model_gru.pt', 'model_gru.pt')
+# Load your custom trained weights
+model_bert = BertForTokenClassification.from_pretrained('bert-base-cased', num_labels=4, id2label=inverse_labelled(df_train_pre), label2id=labelled(df_train_pre))
+model_bert.load_state_dict(torch.load("artifacts/model_bert.pt", map_location=torch.device("cpu")))
 
-model_bert.load_state_dict(torch.load("model_bert.pt", map_location=torch.device("cpu")))
 
 @app.route('/')
 def home():
@@ -34,7 +31,7 @@ def predict():
     user_input_1 = data.get('input')
     user_input_2 = data.get('pos')
 
-    pred = Prediction(model, user_input_1, user_input_2, df_train)
+    pred = Prediction(model, user_input_1, user_input_2)
 
     if model == 'rnn':
         message = pred.prediction(model_bert, tokenizer_bert)
@@ -51,6 +48,6 @@ def predict():
     return jsonify({'result': message})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8082)
+    app.run(host='0.0.0.0', port=8080)
 
 
